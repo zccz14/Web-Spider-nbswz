@@ -1,0 +1,16 @@
+{
+  "name": "web-spider",
+  "version": "0.1.0",
+  "description": "a simple web spider",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "zccz14",
+  "license": "MIT",
+  "dependencies": {
+    "co": "^4.6.0",
+    "mongodb": "^2.2.12",
+    "superagent": "^3.1.0"
+  }
+}
