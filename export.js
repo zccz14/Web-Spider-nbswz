@@ -1,23 +1,25 @@
 const co = require('co');
 const MongoClient = require('mongodb').MongoClient;
+const config = require('./config.json');
 
+//noinspection JSUnusedLocalSymbols
 function Export(req, res) {
-    co(function* () {
-        var db = yield MongoClient.connect('mongodb://localhost:27017/WebSpider');
-        var MongoRes = yield db.collection('nbswz').find({}).toArray();
-        var result = '';
-        if (MongoRes.length > 0) {
-            var keys = Object.keys(MongoRes[0]);
-            keys = keys.filter(v => v !== '_id');
-            result = keys.join(',') + '\n';
-            MongoRes.forEach(record => {
-                result += keys.map(key => record[key]).join(',') + '\n';
-            });
-        }
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-disposition', 'attachment; filename=export.csv')
-        res.end(result);
-    });
+  co(function*() {
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-disposition', 'attachment; filename=export.csv');
+    const db = yield MongoClient.connect(config.mongodb);
+    const sites = yield db.collection('nbswz').distinct("站名");
+    const times = yield db.collection('nbswz').distinct("时间");
+    let title = ["站名", ...times].join(',') + '\n';
+    res.write(title);
+    for (let site of sites) {
+      console.log(site);
+      let line = yield db.collection('nbswz').find({"站名": site}, {"潮位": 1}).toArray();
+      let lineres = [site, ...line.map(v => v["潮位"])].join(',') + '\n';
+      res.write(lineres);
+    }
+    res.end();
+  });
 }
 
 module.exports = Export;
